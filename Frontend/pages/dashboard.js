@@ -15,17 +15,60 @@ export default function Dashboard() {
   const {provider,smartAccount, smartAccountAddress,connect} = useAlchemy();
   const [campaignsData, setCampaignsData] = useState([]);
 
+  const QueryURL = " https://api.studio.thegraph.com/query/54911/funddao/v0.0.1";
+
+  // campaignCreateds(first: 5) {
+  //   id
+  //   title
+  //   requiredAmount
+  //   owner
+  // }
+
+  const query = `
+    {
+      campaignCreateds(first: 5) {
+      id
+      title
+      requiredAmount
+      owner
+      }
+    }
+  `;
+
+  const client = createClient({
+    url: QueryURL
+  });
+
+
+
   useEffect(() => {
+
+    if (!client) {
+      return;
+    }
+
+    const getTokens = async () => {
+      try {
+        const { data } = await client.query(query).toPromise();
+        setTokens(data.campaignCreateds);
+        setIsLoading(false); // Data is loaded
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    getTokens();
+
     connect();
     const Request = async () => {
       
 
       const provider = new ethers.providers.JsonRpcProvider(
-        "https://polygon-mumbai.g.alchemy.com/v2/MeKFrDq5O-mlM8I0CzXpKg0pRvdNRjxF"
+        "https://sepolia-rpc.scroll.io/"
       );
   
       const contract = new ethers.Contract(
-        "0xb802d6AF3924A1386038bA69DF29d996B4cA172E",
+        "0xDd4468c13cef4E3159afd8801EFC7f8E5fAc882e",
         CampaignFactory.abi,
         provider
       );
@@ -36,7 +79,7 @@ export default function Dashboard() {
       //   // You can show a loading spinner or any other loading indicator here
       //   return <div>PLEASE GO TO DASHBOARD...</div>;
       // }
-      const getAllCampaigns = contract.filters.campaignCreated(null, null, "0xd6E79acae4Dd9788B647ec601E1D408bB2d27453");
+      const getAllCampaigns = contract.filters.campaignCreated(null, null, "0xDd4468c13cef4E3159afd8801EFC7f8E5fAc882e");
       const AllCampaigns = await contract.queryFilter(getAllCampaigns);
       const AllData = AllCampaigns.map((e) => {
       return {
@@ -51,7 +94,7 @@ export default function Dashboard() {
       setCampaignsData(AllData)
     }
     Request();
-  }, [])
+  },[client])
 
   return (
     <HomeWrapper>
@@ -59,38 +102,76 @@ export default function Dashboard() {
       {/* Cards Container */}
       <CardsWrapper>
 
-      {/* Card */}
-      {campaignsData.map((e) => {
-        return (
-          <Card key={e.title}>
-          <CardImg>
-            <Image 
-              alt="crowdfunding dapp"
-              layout='fill' 
-              src={"https://sal-dapp.infura-ipfs.io/ipfs/" + e.image} 
-            />
-          </CardImg>
-          <Title>
-            {e.title}
-          </Title>
-          <CardData>
-            <Text>Owner<AccountBoxIcon /></Text> 
-            <Text>{e.owner.slice(0,6)}...{e.owner.slice(39)}</Text>
-          </CardData>
-          <CardData>
-            <Text>Amount<PaidIcon /></Text> 
-            <Text>{e.amount} Matic</Text>
-          </CardData>
-          <CardData>
-            <Text><EventIcon /></Text>
-            <Text>{new Date(e.timeStamp * 1000).toLocaleString()}</Text>
-          </CardData>
-          <Link passHref href={'/' + e.address}><Button>
-            Go to Campaign
-          </Button></Link>
-        </Card>
-        )
-      })}
+        {isLoading ? (
+        // Show loading indicator while data is being fetched
+        <div>Loading...</div>
+      ) : tokens.length > 0 ? (
+        tokens.map((token) => (
+          <div className="subcnt" key={token.id}>
+            <div className="container-fluid" style={{ width: "100%" }}>
+              <table
+                className="tb"
+                style={{
+                  marginBottom: "10px",
+                }}
+                responsive={true}
+              >
+                <tbody>
+                  <tr className="tr">
+                    <td
+                      style={{
+                        backgroundColor: "#96D4D4",
+                        border: "1px solid white",
+                        borderCollapse: "collapse",
+                        padding: "7px",
+                        width: "100px",
+                      }}
+                    >
+                      {token.id}
+                    </td>
+                    <td
+                      style={{
+                        backgroundColor: "#96D4D4",
+                        border: "1px solid white",
+                        borderCollapse: "collapse",
+                        padding: "7px",
+                        width: "800px",
+                      }}
+                    >
+                      {(token.requiredAmount)}
+                    </td>
+                    <td
+                      style={{
+                        backgroundColor: "#96D4D4",
+                        border: "1px solid white",
+                        borderCollapse: "collapse",
+                        padding: "7px",
+                        width: "300px",
+                      }}
+                    >
+                      {token.owner}
+                    </td>
+                    <td
+                      style={{
+                        backgroundColor: "#96D4D4",
+                        border: "1px solid white",
+                        borderCollapse: "collapse",
+                        padding: "7px",
+                        width: "400px",
+                      }}
+                    >
+                      {token.title}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div>No data available</div>
+      )}   
+    
         {/* Card */}
 
       </CardsWrapper>

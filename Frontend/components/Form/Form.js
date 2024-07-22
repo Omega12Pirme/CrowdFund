@@ -108,17 +108,7 @@ const Form = () => {
               
                 console.log(txReceipt);
                 // console.log("txHash", receipt.transactionHash);
-                const polygonScanlink = `https://mumbai.polygonscan.com/tx/${txHash}`
-                toast.success(<a target="_blank" href={polygonScanlink}>Success Click to view transaction</a>, {
-                  position: "top-right",
-                  autoClose: 18000,
-                  hideProgressBar: false,
-                  closeOnClick: true,
-                  pauseOnHover: true,
-                  draggable: true,
-                  progress: undefined,
-                  theme: "dark",
-                  });
+                
             }catch(error){
               console.log(error)
             }
