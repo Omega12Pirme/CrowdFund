@@ -32,7 +32,6 @@ export function handlecampaignCreated(event: campaignCreatedEvent): void {
   entity.campaignAddress = event.params.campaignAddress
   entity.imgURI = event.params.imgURI
   entity.timestamp = event.params.timestamp
-  entity.category = event.params.category
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
